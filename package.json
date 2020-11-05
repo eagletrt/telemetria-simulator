@@ -1,0 +1,24 @@
+{
+  "name": "eagletrt-telemetria-simulator",
+  "version": "1.0.0",
+  "description": "## EagleTRT telemetry simulator for GPS and CAN inputs.",
+  "scripts": {
+    "compile": "./compile.sh",
+    "start": "node",
+    "serve": "npm run compile && npm run start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eagletrt/eagletrt-telemetria-simulator.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eagletrt/eagletrt-telemetria-simulator/issues"
+  },
+  "homepage": "https://github.com/eagletrt/eagletrt-telemetria-simulator#readme",
+  "dependencies": {
+    "deepmerge": "^4.2.2",
+    "shelljs": "^0.8.4"
+  }
+}

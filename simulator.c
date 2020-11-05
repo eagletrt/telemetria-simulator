@@ -40,7 +40,10 @@ int main(int argc, char const *argv[])
         char* line = NULL;
         size_t len = 0;
 
-        FILE* fp = fopen("gps.txt","r");
+        FILE* fp;
+        if (argc > 1) fp = fopen(argv[1],"r");
+        else fp = fopen("gps.txt","r");
+        
         if (fp == NULL)
         {
             perror("Error opening file!\n");
