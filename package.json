@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "EagleTRT telemetry simulator, in order to simulate on local machine the canbus and the gps serial port",
   "scripts": {
-    "compile": "./compile.sh",
+    "gps:compile": "cd gps_simulator && ./compile.sh",
     "start": "sudo node ./bin/index.js",
     "serve": "npm run compile && npm run start"
   },

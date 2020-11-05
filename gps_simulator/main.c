@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "gps_service.h"
+#include "./gps_service/gps_service.h"
 
 int getDelta(int* previousT, int* currentT, char* line);
 

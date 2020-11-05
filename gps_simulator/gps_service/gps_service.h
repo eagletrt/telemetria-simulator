@@ -11,12 +11,6 @@
 #include <errno.h>
 #include <termios.h>
 #include <unistd.h>
-//#include "../../state_machine/state_machine_condition.h"
-//#include "../../utils/log_utils/log_utils.h"
-
-/* EXTERN */
-
-//extern condition_t condition;
 
 /* TYPES */
 
