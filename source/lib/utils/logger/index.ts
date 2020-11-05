@@ -78,7 +78,7 @@ export class Logger {
         }
     }
 
-    error(message: string, scope = this.scope, error: any) {
+    error(message: string, scope = this.scope, error?: any) {
         if (!this.silent) {
             const tag = chalk.bold.red('[ERROR]');
             const handledScope = scope ? chalk.red(`{${scope}}`) : null;

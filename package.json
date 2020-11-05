@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/eagletrt/eagletrt-telemetria-simulator.git"
   },
-  "author": "Giacomo Ascari <giacomo.ascari@studenti.unitn.it> & Eugenio Berretta <euberdeveloper@gmail.com>",
+  "author": "Eugenio Berretta <euberdeveloper@gmail.com> & Giacomo Ascari <giacomo.ascari@studenti.unitn.it>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/eagletrt/eagletrt-telemetria-simulator/issues"
@@ -21,6 +21,7 @@
   "dependencies": {
     "chalk": "^4.1.0",
     "shelljs": "^0.8.4",
+    "tree-kill": "^1.2.2",
     "yargs": "^16.1.0"
   },
   "devDependencies": {
