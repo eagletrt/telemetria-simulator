@@ -4,7 +4,7 @@
   "description": "## EagleTRT telemetry simulator for GPS and CAN inputs.",
   "scripts": {
     "compile": "./compile.sh",
-    "start": "node",
+    "start": "sudo node ./bin/index.js",
     "serve": "npm run compile && npm run start"
   },
   "repository": {
