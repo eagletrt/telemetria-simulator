@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as treeKill from 'tree-kill';
 import { exec } from 'shelljs';
+import { EventEmitter } from 'events';
 import { ChildProcess } from 'child_process';
 import { Logger } from '../../utils';
 
@@ -15,12 +16,11 @@ export type GpsInterfaceCallback = (gpsInterface: string) => void;
 export class GpsSimulatorInstance {
 
     private logger: Logger;
+    private canInterfaceEmitter: EventEmitter;
 
     private _childprocess: ChildProcess;
     private _gpsInterface: string | null;
     private _finished: boolean;
-
-    public gpsInterfaceListener: GpsInterfaceCallback = () => { };
 
     public get childprocess(): ChildProcess {
         return this._childprocess;
@@ -32,12 +32,25 @@ export class GpsSimulatorInstance {
         return this._finished;
     }
 
+    public async getGpsInterface(): Promise<string> {
+        return new Promise((resolve) => {
+            if (this.gpsInterface) {
+                resolve(this.gpsInterface);
+            }
+            else {
+                this.canInterfaceEmitter
+                    .addListener('canInterface', gpsInterface => resolve(gpsInterface));
+            }
+        });
+    }
+
     public async stop(): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.finished) {
                 resolve();
             }
             else {
+                this.childprocess.removeAllListeners();
                 this.childprocess.on('exit', (code, signal) => {
                     if (signal === 'SIGTERM') {
                         this.logger.success('Gps player closed');
@@ -61,15 +74,26 @@ export class GpsSimulatorInstance {
         this.logger = logger;
         this._finished = false;
 
+        this.canInterfaceEmitter = new EventEmitter();
         this.childprocess.stdout?.setEncoding('utf8');
-        this.childprocess.stdout?.on('data', data => {
-            console.log('entrato')
-            console.log(data.toString())
+        this.childprocess.stdout?.on('data', (data: Buffer) => {
+            const lines = data.toString().split('\n');
+            for (const line of lines) {
+                if (line.includes('{MESSAGE}') && line.includes('GPS INTERFACE')) {
+                    this._gpsInterface = line.split('GPS INTERFACE: ')[1];
+                    this.canInterfaceEmitter.emit('canInterface', this._gpsInterface);
+                }
+            }
         });
 
-        this.childprocess.on('exit', () => {
+        this.childprocess.on('exit', code => {
+            if (code === 0) {
+                logger.success('Gps player finished');
+            }
+            else {
+                logger.error(`Gps player finished with error code ${code}`);
+            }
             this._finished = false;
-            logger.success('Gps player finished');
         });
     }
 
@@ -83,7 +107,7 @@ const DEFAULT_OPTIONS: SimulateGpsOptions = {
 };
 
 export async function simulateGps(src: string | null = DEFAULT_SOURCE, options: Partial<SimulateGpsOptions> = {}): Promise<GpsSimulatorInstance> {
-    return new Promise<GpsSimulatorInstance>((resolve, reject) => {
+    return new Promise<GpsSimulatorInstance>((resolve) => {
         const handledSrc = src ?? DEFAULT_SOURCE;
         const handledOptions: SimulateGpsOptions = { ...DEFAULT_OPTIONS, ...options };
         const logger = new Logger(handledOptions.silent, 'GPS');
@@ -98,10 +122,6 @@ export async function simulateGps(src: string | null = DEFAULT_SOURCE, options: 
         // }
         const stringifiedCommandOptions = commandOptions.join(' ');
         const pathToGpsSimulator = path.join(__dirname, '..', '..', '..', '..', 'gps_simulator', 'gps_simulator.out');
-
-        console.log(pathToGpsSimulator)
-
-        console.log(DEFAULT_SOURCE)
 
         logger.info('Starting gps simulator');
         const childProcess = exec(`${pathToGpsSimulator} ${stringifiedCommandOptions}`, { async: true, silent: handledOptions.silent });

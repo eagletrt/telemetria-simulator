@@ -35,6 +35,7 @@ export class CanSimulatorInstance {
                 resolve();
             }
             else {
+                this.childprocess.removeAllListeners();
                 this.childprocess.on('exit', (code, signal) => {
                     if (signal === 'SIGTERM') {
                         this.logger.success('Can player closed');
@@ -59,9 +60,14 @@ export class CanSimulatorInstance {
         this.logger = logger;
         this._finished = false;
 
-        this.childprocess.on('exit', () => {
+        this.childprocess.on('exit', code => {
+            if (code === 0) {
+                logger.success('Can player finished');
+            }
+            else {
+                logger.error(`Can player finished with error code ${code}`);
+            }
             this._finished = false;
-            logger.success('Can player finished');
         });
     }
 
@@ -76,7 +82,7 @@ const DEFAULT_OPTIONS: SimulateCanOptions = {
 };
 
 export async function simulateCan(src: string | null = DEFAULT_SOURCE, options: Partial<SimulateCanOptions> = {}): Promise<CanSimulatorInstance> {
-    return new Promise<CanSimulatorInstance>((resolve, reject) => {
+    return new Promise<CanSimulatorInstance>((resolve) => {
         const handledSrc = src ?? DEFAULT_SOURCE;
         const handledOptions: SimulateCanOptions = {...DEFAULT_OPTIONS, ...options};
         const logger = new Logger(handledOptions.silent, 'CAN');
