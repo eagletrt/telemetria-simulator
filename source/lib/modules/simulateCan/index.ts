@@ -67,7 +67,7 @@ export class CanSimulatorInstance {
 
 }
 
-const DEFAULT_SOURCE = path.join(__dirname, '..', '..', 'default_sources', 'default.can.log');
+const DEFAULT_SOURCE = path.join(__dirname, '..', '..', '..', '..', 'default_sources', 'default.can.log');
 const DEFAULT_OPTIONS: SimulateCanOptions = {
     silent: true,
     canInterface: 'can0',

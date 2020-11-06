@@ -1,6 +1,6 @@
 {
   "name": "@eagletrt/eagletrt-telemetria-simulator",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "EagleTRT telemetry simulator, in order to simulate on local machine the canbus and the gps serial port",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
