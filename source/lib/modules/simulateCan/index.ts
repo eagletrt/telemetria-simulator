@@ -12,14 +12,26 @@ export interface SimulateCanOptions {
 };
 
 export class CanSimulatorInstance {
-    
-    public readonly childprocess: ChildProcess;
-    public readonly canInterface: string;
+
     private logger: Logger;
+
+    private _childprocess: ChildProcess;
+    private _canInterface: string;
+    private _finished: boolean;
+
+    public get childprocess(): ChildProcess {
+        return this._childprocess;
+    }
+    public get canInterface(): string {
+        return this._canInterface;
+    }
+    public get finished(): boolean {
+        return this._finished;
+    }
 
     public async stop(): Promise<void> {
         return new Promise((resolve, reject) => {
-            if (this.childprocess.killed) {
+            if (this.finished) {
                 resolve();
             }
             else {
@@ -42,11 +54,13 @@ export class CanSimulatorInstance {
     }
 
     constructor (childprocess: ChildProcess, canInterface: string, logger: Logger) {
-        this.childprocess = childprocess;
-        this.canInterface = canInterface;
+        this._childprocess = childprocess;
+        this._canInterface = canInterface;
         this.logger = logger;
+        this._finished = false;
 
-        this.childprocess.on('exit', (code, signal) => {
+        this.childprocess.on('exit', () => {
+            this._finished = false;
             logger.success('Can player finished');
         });
     }
