@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "./gps_service/gps_service.h"
+#include <limits.h>
 
 // Let this shit to use asprintf
 #ifndef _GNU_SOURCE
@@ -15,6 +16,35 @@ int getDelta(int* previousT, int* currentT, char* line);
 
 int main(int argc, char const *argv[])
 {
+
+    int ubxTime = 0;
+    int ubxIterations = 1;
+    char* ubxSource = NULL;
+    char ubxIterationsBuff[101] = "1";
+
+    int opt = 0;
+    while ((opt = getopt(argc, argv, "tn:l:")) != -1) {
+        switch(opt) {
+            case 't':
+                ubxTime = 1;
+                break;
+            case 'n':
+                sprintf(ubxIterationsBuff, "%s", optarg); //convert the integer to string when automatically parsed by getopt
+                ubxIterations = (ubxIterationsBuff[0] == 'i') ? INT_MAX : atoi(optarg);
+                break;
+            case 'l':
+                ubxSource = optarg;
+                break;
+            default:
+                printError("invalid argument received");
+                exit(1);
+        }
+    }
+    if (ubxSource == NULL) {
+        printError("the log file has not been specified, use -l <path>");
+        exit(1);
+    }
+
     usleep(1000 * 1000);
 
     int previousT = 0, currentT = 0, deltaT = 0;
@@ -44,24 +74,31 @@ int main(int argc, char const *argv[])
         exit(1);
     }
 
+    // configuration messages
+    if (ubxTime) printMessage("UBX SIMULATING TIME");
+    else printMessage("UBX NOT SIMULATING TIME");
+
+    char* ubxSourceMessage;
+    asprintf(&ubxSourceMessage, "UBX SOURCE: %s", ubxSource);
+    printMessage(ubxSourceMessage);
+    free(ubxSourceMessage);
+
+    char* ubxIterationsMessage;
+    asprintf(&ubxIterationsMessage, "UBX ITERATIONS: %s", ubxIterations == INT_MAX ? "infinite" : ubxIterationsBuff);
+    printMessage(ubxIterationsMessage);
+    free(ubxIterationsMessage);
+
     char* gpsInterfaceMessage;
     asprintf(&gpsInterfaceMessage, "GPS INTERFACE: %s", slavepath);
     printMessage(gpsInterfaceMessage);
     free(gpsInterfaceMessage);
     
-    
-    while(1){
+    while(ubxIterations){
         char* line = NULL;
         size_t len = 0;
 
         FILE* fp;
-        char* ubxSource = (argc > 1) ? argv[1] : "gps.txt"; // TODO: ....
         fp = fopen(ubxSource, "r");
-
-        char* ubxSourceMessage;
-        asprintf(&ubxSourceMessage, "UBX SOURCE: %s", ubxSource);
-        printMessage(ubxSourceMessage);
-        free(ubxSourceMessage);
         
         if (fp == NULL)
         {
@@ -73,8 +110,10 @@ int main(int argc, char const *argv[])
         while (t != -1)
         {
             t = getline(&line, &len, fp);
-            deltaT = getDelta(&previousT, &currentT, line);
-            sleep(deltaT);
+            if (ubxTime) {
+                deltaT = getDelta(&previousT, &currentT, line);
+                sleep(deltaT);
+            }
             int written_bytes = write(gps_port,line,t);
             line = NULL;
             len = 0;
@@ -82,6 +121,8 @@ int main(int argc, char const *argv[])
 
         free(line);
         fclose(fp);
+
+        if (ubxIterations != INT_MAX) ubxIterations--;
     }
 
     return 0;
